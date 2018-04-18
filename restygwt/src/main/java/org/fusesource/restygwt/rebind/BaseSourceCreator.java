@@ -156,7 +156,8 @@ public abstract class BaseSourceCreator extends AbstractSourceCreator {
     }
 
     public static final String parametersName2ClassName(String parametrizedQualifiedSourceName) {
-        return parametrizedQualifiedSourceName.replace('.', '_').replace("<", "__").replace(">", "__");
+        return parametrizedQualifiedSourceName.replace('.', '_')
+            .replace("<", "__").replace(">", "__").replace("?", "$");
     }
 
 

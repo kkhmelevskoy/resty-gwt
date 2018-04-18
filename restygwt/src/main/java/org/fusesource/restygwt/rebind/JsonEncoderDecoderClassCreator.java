@@ -285,9 +285,13 @@ public class JsonEncoderDecoderClassCreator extends BaseSourceCreator {
                             default:
                         }
                     }
-
-                    p(possibleType.clazz.getParameterizedQualifiedSourceName() + " parseValue = (" +
-                        possibleType.clazz.getParameterizedQualifiedSourceName() + ")value;");
+                    
+                    String sourceName = possibleType.clazz
+                        .isGenericType() != null
+                            ? possibleType.clazz.getQualifiedSourceName()
+                            : possibleType.clazz
+                                .getParameterizedQualifiedSourceName();
+                    p(sourceName + " parseValue = (" + sourceName + ")value;");
 
                     for (final JField field : fields) {
 
@@ -489,12 +493,20 @@ public class JsonEncoderDecoderClassCreator extends BaseSourceCreator {
                 } else {
                     // Try to find a constuctor that is annotated as creator
                     JConstructor creator = findCreator(possibleType.clazz);
+                    String sourceName = possibleType.clazz
+                        .isGenericType() != null
+                            ? possibleType.clazz.getQualifiedSourceName()
+                            : possibleType.clazz
+                                .getParameterizedQualifiedSourceName();
+                    String nameForNew = possibleType.clazz
+                        .getQualifiedSourceName()
+                        + (possibleType.clazz.isParameterized() != null ? "<>"
+                            : "");
 
                     List<JField> orderedFields = null;
                     if (creator != null) {
                         p("// We found a creator so we use the annotated constructor");
-                        p("" + possibleType.clazz.getParameterizedQualifiedSourceName() + " rc = new " +
-                            possibleType.clazz.getParameterizedQualifiedSourceName() + "(");
+                        p("" + sourceName + " rc = " + "new " + nameForNew + "(");
                         i(1).p("// The arguments are placed in the order they appear within the annotated constructor")
                             .i(-1);
                         orderedFields = getOrderedFields(getFields(possibleType.clazz), creator);
@@ -525,8 +537,7 @@ public class JsonEncoderDecoderClassCreator extends BaseSourceCreator {
                     }
 
                     if (orderedFields == null) {
-                        p("" + possibleType.clazz.getParameterizedQualifiedSourceName() + " rc = new " +
-                            possibleType.clazz.getParameterizedQualifiedSourceName() + "();");
+                        p("" + sourceName + " rc = new " + nameForNew + "();");
                     }
 
                     for (final JField field : getFields(possibleType.clazz)) {

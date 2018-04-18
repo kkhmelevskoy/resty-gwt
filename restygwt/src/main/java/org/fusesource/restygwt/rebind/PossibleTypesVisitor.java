@@ -12,11 +12,14 @@ import com.google.gwt.core.ext.GeneratorContext;
 import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JClassType;
+import com.google.gwt.core.ext.typeinfo.JParameterizedType;
 import com.google.gwt.thirdparty.guava.common.collect.Lists;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.fusesource.restygwt.rebind.JsonEncoderDecoderClassCreator.Subtype;
 import org.fusesource.restygwt.rebind.util.JsonTypeInfoIdVisitor;
@@ -158,17 +161,31 @@ public class PossibleTypesVisitor extends JsonTypeInfoIdVisitor<List<Subtype>, U
                 }
             }
         } else {
-            for (JClassType typeClass : context.getTypeOracle().getTypes()) {
-                if (!typeClass.isAbstract() && typeClass.isAssignableTo(classType)) {
+            JClassType baseType = classType; 
+            for (JClassType typeClass : baseType.getSubtypes()) {
+                if (!typeClass.isAbstract() && typeClass.isInterface() == null) {
                     resolvedSubtypes.add(typeClass);
+                }
+            }
+            
+            if (baseType instanceof JParameterizedType) {
+                baseType = ((JParameterizedType) baseType).getBaseType();
+                for (JClassType typeClass : baseType.getSubtypes()) {
+                    if (!typeClass.isAbstract() && typeClass.isInterface() == null) {
+                        resolvedSubtypes.add(typeClass);
+                    }
                 }
             }
         }
 
+        Set<String> sourceNames = new HashSet<String>();
         for (JClassType typeClass : resolvedSubtypes) {
-            possibleTypes.add(
-                new Subtype(id == Id.CLASS ? typeClass.getQualifiedSourceName() : "." + typeClass.getSimpleSourceName(),
-                    typeClass));
+            String sourceName = id == Id.CLASS
+                ? typeClass.getQualifiedSourceName()
+                : "." + typeClass.getSimpleSourceName();
+            if (sourceNames.add(sourceName)) {
+                possibleTypes.add(new Subtype(sourceName, typeClass));
+            }
         }
 
         return possibleTypes;
