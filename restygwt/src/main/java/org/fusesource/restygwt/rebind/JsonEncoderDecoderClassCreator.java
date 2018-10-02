@@ -134,6 +134,10 @@ public class JsonEncoderDecoderClassCreator extends BaseSourceCreator {
 
         generateSingleton(shortName);
 
+        if (typeInfo != null && isLeaf && possibleTypes.isEmpty()) {
+            typeInfo = null;
+            possibleTypes = Lists.newArrayList(new Subtype(null, source));
+        }
         generateEncodeMethod(source, classStyle, typeInfo, railsWrapperName, possibleTypes, isLeaf, locator);
 
         generateDecodeMethod(source, classStyle, typeInfo, railsWrapperName, possibleTypes, isLeaf, locator);
