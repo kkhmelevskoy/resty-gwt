@@ -38,8 +38,10 @@ import com.google.gwt.core.ext.typeinfo.HasAnnotations;
 import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JConstructor;
 import com.google.gwt.core.ext.typeinfo.JField;
+import com.google.gwt.core.ext.typeinfo.JGenericType;
 import com.google.gwt.core.ext.typeinfo.JMethod;
 import com.google.gwt.core.ext.typeinfo.JParameter;
+import com.google.gwt.core.ext.typeinfo.JParameterizedType;
 import com.google.gwt.core.ext.typeinfo.JPrimitiveType;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.json.client.JSONArray;
@@ -1055,7 +1057,15 @@ public class JsonEncoderDecoderClassCreator extends BaseSourceCreator {
     }
 
     public static boolean isLeaf(JClassType source) {
-        return !(source.getSubtypes() != null && source.getSubtypes().length > 0);
+	JClassType[] subtypes = source.getSubtypes();
+	if (source instanceof JParameterizedType) {
+	    JGenericType baseType = ((JParameterizedType) source).getBaseType();
+	    if (baseType != null && baseType.isAbstract()) {
+		subtypes = baseType.getSubtypes();
+	    }
+	}
+	
+	return !(subtypes != null && subtypes.length > 0);
     }
 
     public static class Subtype implements Comparable<Subtype> {
